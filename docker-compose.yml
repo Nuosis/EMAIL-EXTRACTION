@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  email_extractor:
+    build: .
+    environment:
+      - POLL_INTERVAL=${POLL_INTERVAL}
+      - EMAIL_ACCOUNT=${EMAIL_ACCOUNT}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
+      - MAILJET_API_KEY=${MAILJET_API_KEY}
+      - MAILJET_API_SECRET=${MAILJET_API_SECRET}
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    command: python script.py

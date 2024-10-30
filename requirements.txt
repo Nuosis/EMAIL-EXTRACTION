@@ -1,0 +1,7 @@
+requests
+imapclient
+mail-parser
+PyPDF2
+python-docx
+mailjet_rest
+python-dotenv
