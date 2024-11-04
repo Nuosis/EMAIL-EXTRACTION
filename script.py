@@ -25,6 +25,7 @@ from imapclient import IMAPClient
 from mailparser import parse_from_bytes
 from dotenv import load_dotenv
 import os
+import sys
 from PyPDF2 import PdfReader
 from docx import Document 
 from mailjet_rest import Client
@@ -46,7 +47,8 @@ MAILJET_API_SECRET = os.getenv("MAILJET_API_SECRET")
 POLL_INTERVAL = 300
 
 # Ollama settings
-OLLAMA_URL = "http://localhost:11434"
+OLLAMA_LOCAL_URL = "http://localhost:11434"
+OLLAMA_DOCKER_HOST_URL = "http://host.docker.internal:11434"
 MODEL_NAME = "OpenChat"
 PROMPT_TEMPLATE = """
 Analyze the following email content and determine if it is a job application for a cleaning job. Terms like ‘applying’, ‘resume’, ‘application’, ‘position,’ ‘job opportunity', 'cleaning job,'  and ‘seeking employment’ are highly indicative of a job submission email. If there is an attachment, note that this may be a resume, reinforcing that this is likely a job application.
@@ -61,6 +63,28 @@ Email Content:
 {content}
 \"\"\"
 """
+
+# Function to test connection to Ollama
+def test_ollama_connection(url):
+    try:
+        # Sending a minimal test request to check connection
+        response = requests.post(f"{url}/api/generate", json={"model": MODEL_NAME})
+        if response.status_code == 200 and response.json().get("done") == True:
+            print(f"Successfully connected to Ollama at {url}")
+            return url
+    except requests.RequestException as e:
+        print(f"Failed to connect to Ollama at {url}: {e}")
+    return None
+
+# Try connecting to Ollama on localhost first, then host.docker.internal
+OLLAMA_URL = test_ollama_connection(OLLAMA_LOCAL_URL) or test_ollama_connection(OLLAMA_DOCKER_HOST_URL)
+
+# If both connections fail, log and exit
+if not OLLAMA_URL:
+    print("Error: Could not connect to Ollama on localhost or host.docker.internal.")
+    sys.exit(1)
+else:
+    print(f"Using Ollama URL: {OLLAMA_URL}")
 
 email_template = """
 <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Select Home Cleaning</title></head>

@@ -7,6 +7,9 @@ WORKDIR /app
 # Copy only necessary files to leverage Docker cache
 COPY requirements.txt .
 
+# Expose any required ports
+EXPOSE 11434
+
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
